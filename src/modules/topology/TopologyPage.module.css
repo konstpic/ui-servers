@@ -1,0 +1,14 @@
+ .root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.canvas {
+  height: 420px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #020617, #020617);
+  border: 1px solid rgba(55, 65, 81, 0.9);
+}
+

@@ -1,0 +1,29 @@
+services:
+  agent-1:
+    build:
+      context: ./node-agent
+    container_name: serverui-agent-1
+    environment:
+      - AGENT_ID=agent-1
+      - BACKEND_URL=http://host.docker.internal:4000
+      - SERVER_ID=server-1
+      - SERVER_NAME=server-1
+      - SERVER_IP=10.0.0.1
+      - SERVER_TIER=prod
+    ports:
+      - "18081:8080"
+  # 
+  agent-2:
+    build:
+      context: ./node-agent
+    container_name: serverui-agent-2
+    environment:
+      - AGENT_ID=agent-2
+      - BACKEND_URL=http://host.docker.internal:4000
+      - SERVER_ID=server-2
+      - SERVER_NAME=server-2
+      - SERVER_IP=10.0.0.2
+      - SERVER_TIER=prod
+    ports:
+      - "18082:8080"
+

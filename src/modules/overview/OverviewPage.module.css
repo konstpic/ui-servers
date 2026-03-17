@@ -1,0 +1,145 @@
+ .root {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.statCard {
+  position: relative;
+  border-radius: 18px;
+  padding: 12px 12px 10px;
+  background: radial-gradient(circle at top left, #020617, #020617)
+      padding-box,
+    linear-gradient(145deg, rgba(148, 163, 184, 0.7), rgba(15, 23, 42, 0.9))
+      border-box;
+  border: 1px solid transparent;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.75);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.statBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.statPrimary {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.statHint {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.statBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.eventsCard {
+  border-radius: 16px;
+  padding: 10px 10px 4px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(30, 64, 175, 0.6);
+}
+
+.eventsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eventItem {
+  padding: 6px 6px 5px;
+  border-radius: 12px;
+  background: radial-gradient(circle at left, #020617, #020617);
+  border: 1px solid rgba(31, 41, 55, 0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.eventMain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eventKind {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.eventSummary {
+  font-size: 12px;
+}
+
+.eventMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.eventTarget {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+}
+
+.eventTime {
+  color: var(--text-muted);
+}
+
+.healthCard {
+  border-radius: 16px;
+  padding: 10px 10px 6px;
+  background: radial-gradient(circle at top left, #020617, #020617);
+  border: 1px solid rgba(22, 163, 74, 0.7);
+}
+
+.healthRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 6px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(30, 64, 175, 0.4);
+  font-size: 12px;
+}
+
+.healthLabel {
+  color: var(--text-soft);
+}
+
+.healthPill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.15);
+  color: #bbf7d0;
+  border: 1px solid rgba(34, 197, 94, 0.7);
+  font-size: 11px;
+}
+

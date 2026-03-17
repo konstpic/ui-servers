@@ -1,0 +1,183 @@
+ .root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.smallInput {
+  border-radius: 999px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  background: rgba(15, 23, 42, 0.92);
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-soft);
+  width: 120px;
+}
+
+.addButton {
+  border-radius: 999px;
+  border: none;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #22c55e, #6366f1);
+  font-size: 11px;
+  color: #020617;
+  cursor: pointer;
+}
+
+.searchInput {
+  border-radius: 999px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  background: rgba(15, 23, 42, 0.92);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-soft);
+  min-width: 260px;
+}
+
+.table {
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(30, 64, 175, 0.8);
+  overflow: hidden;
+}
+
+.headerRow {
+  display: grid;
+  grid-template-columns: 2.4fr 1fr 1.3fr 1.4fr 1.4fr 0.9fr 0.9fr;
+  padding: 6px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(30, 64, 175, 0.7);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2.4fr 1fr 1.3fr 1.4fr 1.4fr 0.9fr 0.9fr;
+  align-items: center;
+  padding: 7px 10px;
+  border: none;
+  background: transparent;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+  font-size: 12px;
+  color: var(--text-soft);
+  cursor: pointer;
+  text-align: left;
+}
+
+.row:last-of-type {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: radial-gradient(circle at left, rgba(37, 99, 235, 0.35), #020617);
+}
+
+.cellMain {
+  display: flex;
+  flex-direction: column;
+}
+
+.serverName {
+  color: var(--text-strong);
+}
+
+.serverMeta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.tierPill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.96);
+  font-size: 11px;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.statusDotOk {
+  background: #22c55e;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.7);
+}
+
+.statusDotWarn {
+  background: #facc15;
+  box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.7);
+}
+
+.statusDotError {
+  background: #f97373;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.7);
+}
+
+.statusLabel {
+  text-transform: capitalize;
+}
+
+.metricBar {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  background: radial-gradient(circle at left, rgba(15, 23, 42, 0.9), #020617);
+  border: 1px solid rgba(30, 64, 175, 0.7);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.metricBarInnerOk,
+.metricBarInnerWarn,
+.metricBarInnerError {
+  height: 100%;
+  border-radius: 999px;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+  background: linear-gradient(90deg, #22c55e, #38bdf8);
+}
+
+.metricBarInnerWarn {
+  background: linear-gradient(90deg, #eab308, #fb923c);
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.35);
+}
+
+.metricBarInnerError {
+  background: linear-gradient(90deg, #f97373, #ef4444);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.metricBarLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text-soft);
+  pointer-events: none;
+}
+
+

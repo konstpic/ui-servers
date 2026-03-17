@@ -1,0 +1,21 @@
+services:
+  panel-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: serverui-panel
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    container_name: serverui-backend
+    environment:
+      - PORT=4000
+      - AGENT_URLS=http://host.docker.internal:18081,http://host.docker.internal:18082
+    ports:
+      - "4000:4000"
+
