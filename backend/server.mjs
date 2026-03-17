@@ -1,5 +1,6 @@
 import express from 'express'
 import fetch from 'node-fetch'
+import { WebSocketServer } from 'ws'
 import {
   addEvent,
   listEvents,
@@ -19,9 +20,33 @@ import {
 const app = express()
 const port = Number(process.env.PORT ?? 4000)
 
-const agentUrls =
-  (process.env.AGENT_URLS?.split(',').map((u) => u.trim()).filter(Boolean) ??
-    []) || ['http://localhost:18081', 'http://localhost:18082']
+const wsClients = new Set()
+
+// in-memory state for network rate calculation between scrapes
+const netState = new Map()
+
+// node-exporter targets in format: serverId=url;server2=url2
+// Example:
+// NODE_EXPORTERS=server-1=http://5.39.220.25:9100;server-2=http://fin.konstpic.ru:9100
+const nodeExporterConfig =
+  process.env.NODE_EXPORTERS?.split(';')
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .map((chunk) => {
+      const [idPart, urlStr] = chunk.split('=')
+      if (!idPart || !urlStr) return null
+      try {
+        const targetUrl = new URL(urlStr)
+        return {
+          serverId: idPart,
+          url: targetUrl.toString(),
+          host: targetUrl.hostname,
+        }
+      } catch {
+        return null
+      }
+    })
+    .filter(Boolean) ?? []
 
 app.use(express.json())
 
@@ -36,33 +61,51 @@ app.use((_, res, next) => {
 })
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, agents: agentUrls.length })
+  res.json({ ok: true, node_exporters: nodeExporterConfig.length })
 })
-
-async function fetchAgent(url) {
-  try {
-    const [statusRes, metricsRes] = await Promise.all([
-      fetch(new URL('/status', url)),
-      fetch(new URL('/metrics', url)),
-    ])
-
-    const status = await statusRes.json()
-    const metrics = await metricsRes.json()
-
-    return { ok: true, url, status, metrics }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('agent fetch failed', url, error)
-    return { ok: false, url }
-  }
-}
 
 app.get('/api/events', (_req, res) => {
   res.json(listEvents(30))
 })
 
+function buildEnrichedServers() {
+  const servers = listServers()
+  const latestMetrics = listLatestServerMetrics()
+  // prefer technical "node-exporter" nodes (id === server_id) over legacy agents
+  const allNodes = listNodes()
+  const exporterNodes = allNodes.filter(
+    (n) => n.id === n.server_id || n.version === 'node-exporter',
+  )
+  const nodeByServer = new Map(exporterNodes.map((n) => [n.server_id, n]))
+  const metricsByServer = new Map(
+    latestMetrics.map((m) => [m.server_id, m]),
+  )
+
+  return servers.map((s) => {
+    const node = nodeByServer.get(s.id)
+    const m = metricsByServer.get(s.id)
+    return {
+      id: s.id,
+      name: s.name,
+      hostname: s.hostname,
+      ip: s.ip,
+      tier: s.tier,
+      status: s.status,
+      cpu: s.cpu,
+      ram: s.ram,
+      agentsCount: s.agents_count,
+      nginxCount: s.nginx_count,
+      agentName: node?.version ?? null,
+      agentPingMs:
+        node && node.last_ping != null ? Number(node.last_ping) || 0 : null,
+      netRxBytes: m?.net_rx_bytes ?? null,
+      netTxBytes: m?.net_tx_bytes ?? null,
+    }
+  })
+}
+
 app.get('/api/servers', (_req, res) => {
-  res.json(listServers())
+  res.json(buildEnrichedServers())
 })
 
 app.post('/api/servers', (req, res) => {
@@ -91,7 +134,16 @@ app.post('/api/servers', (req, res) => {
 })
 
 app.get('/api/nodes', (_req, res) => {
-  res.json(listNodes())
+  const rows = listNodes()
+  res.json(
+    rows.map((row) => ({
+      id: row.id,
+      serverId: row.server_id,
+      version: row.version,
+      status: row.status,
+      lastPing: row.last_ping,
+    })),
+  )
 })
 
 app.post('/api/nodes', (req, res) => {
@@ -203,6 +255,168 @@ app.get('/api/metrics/nginx', (req, res) => {
   const sinceMinutes = Number(req.query.sinceMinutes ?? 15)
   res.json(listRecentNginxFlow({ limit, sinceMinutes }))
 })
+
+function parsePrometheusMetrics(text) {
+  const lines = text.split('\n')
+  const map = new Map()
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    const spaceIdx = line.lastIndexOf(' ')
+    if (spaceIdx <= 0) continue
+    const nameAndLabels = line.slice(0, spaceIdx)
+    const valueStr = line.slice(spaceIdx + 1)
+    const value = Number(valueStr)
+    if (Number.isNaN(value)) continue
+    map.set(nameAndLabels, value)
+  }
+  return map
+}
+
+function getMetricByPrefix(map, namePrefix) {
+  for (const [key, value] of map.entries()) {
+    if (key.startsWith(namePrefix)) return value
+  }
+  return undefined
+}
+
+async function pollNodeExporterOnce() {
+  const updatedSamples = []
+  for (const cfg of nodeExporterConfig) {
+    try {
+      const started = Date.now()
+      const res = await fetch(new URL('/metrics', cfg.url))
+      if (!res.ok) {
+        // eslint-disable-next-line no-console
+        console.error('node-exporter metrics failed', cfg.url, res.status)
+        continue
+      }
+      const text = await res.text()
+      const latencyMs = Date.now() - started
+      const metrics = parsePrometheusMetrics(text)
+
+      const totalMem =
+        getMetricByPrefix(metrics, 'node_memory_MemTotal_bytes') ?? 0
+      const availMem =
+        getMetricByPrefix(metrics, 'node_memory_MemAvailable_bytes') ?? 0
+
+      let ramPercent = 0
+      if (totalMem > 0 && availMem >= 0) {
+        const usedMem = totalMem - availMem
+        ramPercent = (usedMem / totalMem) * 100
+      }
+
+      // aggregate network bytes across all non-loopback interfaces
+      let rxTotal = 0
+      let txTotal = 0
+      for (const [key, value] of metrics.entries()) {
+        if (
+          key.startsWith('node_network_receive_bytes_total{') &&
+          !key.includes('device="lo"')
+        ) {
+          rxTotal += value
+        } else if (
+          key.startsWith('node_network_transmit_bytes_total{') &&
+          !key.includes('device="lo"')
+        ) {
+          txTotal += value
+        }
+      }
+
+      let rxRate = null
+      let txRate = null
+      if (rxTotal > 0 || txTotal > 0) {
+        const prev = netState.get(cfg.serverId)
+        const nowMs = Date.now()
+        if (prev && nowMs > prev.tsMs) {
+          const dtSec = (nowMs - prev.tsMs) / 1000
+          if (dtSec > 0) {
+            const rxDelta = rxTotal - prev.rxTotal
+            const txDelta = txTotal - prev.txTotal
+            rxRate = rxDelta >= 0 ? rxDelta / dtSec : null
+            txRate = txDelta >= 0 ? txDelta / dtSec : null
+          }
+        }
+        netState.set(cfg.serverId, { rxTotal, txTotal, tsMs: nowMs })
+      }
+
+      // Fallback similar to старый агент: используем loadavg и число CPU
+      const load1 = getMetricByPrefix(metrics, 'node_load1') ?? 0
+      const cpus = getMetricByPrefix(metrics, 'node_cpu_seconds_total') ?? 1
+      const cpuPercentRaw =
+        cpus > 0 ? Math.min(100, Math.max(0, (load1 / cpus) * 100)) : 0
+
+      const cpuPercent = Math.round(cpuPercentRaw)
+      ramPercent = Math.round(ramPercent)
+
+      const serverRow = {
+        id: cfg.serverId,
+        name: cfg.serverId,
+        hostname: cfg.host,
+        ip: cfg.host,
+        tier: 'prod',
+        status: 'healthy',
+        cpu: cpuPercent,
+        ram: ramPercent,
+        agents_count: 0,
+        nginx_count: 0,
+      }
+
+      const nowIso = new Date().toISOString()
+
+      upsertServer(serverRow)
+      insertServerMetrics({
+        server_id: cfg.serverId,
+        agent_id: 'node-exporter',
+        timestamp: nowIso,
+        cpu: cpuPercent,
+        ram: ramPercent,
+        disk_used_percent: null,
+        net_rx_bytes: rxRate != null ? Math.max(0, Math.round(rxRate)) : null,
+        net_tx_bytes: txRate != null ? Math.max(0, Math.round(txRate)) : null,
+      })
+      upsertNode({
+        id: cfg.serverId,
+        server_id: cfg.serverId,
+        version: 'node-exporter',
+        status: 'healthy',
+        last_ping: `${latencyMs}`,
+      })
+      updatedSamples.push({
+        server_id: cfg.serverId,
+        timestamp: nowIso,
+        cpu: cpuPercent,
+        ram: ramPercent,
+      })
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('node-exporter poll error', cfg.url, error)
+    }
+  }
+
+  if (updatedSamples.length && wsClients.size) {
+    const nodes = listNodes().map((row) => ({
+      id: row.id,
+      serverId: row.server_id,
+      version: row.version,
+      status: row.status,
+      lastPing: row.last_ping,
+    }))
+
+    const payload = JSON.stringify({
+      type: 'metrics_update',
+      at: new Date().toISOString(),
+      metrics: listLatestServerMetrics(),
+      servers: buildEnrichedServers(),
+      nodes,
+    })
+    for (const ws of wsClients) {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(payload)
+      }
+    }
+  }
+}
 
 app.post('/api/agent/heartbeat', (req, res) => {
   const { server, agent, metrics } = req.body ?? {}
@@ -367,9 +581,56 @@ app.get('/api/topology', (_req, res) => {
   res.json({ nodes: topoNodes, edges })
 })
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   // eslint-disable-next-line no-console
-  console.log(`Backend listening on ${port}, agents:`, agentUrls)
+  console.log(
+    `Backend listening on ${port}, node_exporters=${nodeExporterConfig.length}`,
+  )
+  if (nodeExporterConfig.length > 0) {
+    const intervalSec = Number(
+      process.env.NODE_EXPORTER_POLL_INTERVAL_SEC ?? '15',
+    )
+    // first tick
+    pollNodeExporterOnce().catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('node-exporter initial poll error', error)
+    })
+    // periodic ticks
+    setInterval(() => {
+      pollNodeExporterOnce().catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error('node-exporter poll tick error', error)
+      })
+    }, intervalSec * 1000)
+  }
 })
 
+const wss = new WebSocketServer({ server, path: '/ws/metrics' })
 
+wss.on('connection', (ws) => {
+  wsClients.add(ws)
+
+  // отправляем текущие метрики сразу после подключения
+  const snapshotMetrics = listLatestServerMetrics()
+  const snapshotServers = buildEnrichedServers()
+  const snapshotNodes = listNodes().map((row) => ({
+    id: row.id,
+    serverId: row.server_id,
+    version: row.version,
+    status: row.status,
+    lastPing: row.last_ping,
+  }))
+  ws.send(
+    JSON.stringify({
+      type: 'metrics_snapshot',
+      at: new Date().toISOString(),
+      metrics: snapshotMetrics,
+      servers: snapshotServers,
+      nodes: snapshotNodes,
+    }),
+  )
+
+  ws.on('close', () => {
+    wsClients.delete(ws)
+  })
+})

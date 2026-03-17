@@ -43,7 +43,7 @@
 
 .headerRow {
   display: grid;
-  grid-template-columns: 2.4fr 1fr 1.3fr 1.4fr 1.4fr 0.9fr 0.9fr;
+  grid-template-columns: 2.4fr 1fr 1.3fr 1.4fr 1.4fr 1.2fr 0.9fr;
   padding: 6px 10px;
   font-size: 11px;
   text-transform: uppercase;
@@ -59,7 +59,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 2.4fr 1fr 1.3fr 1.4fr 1.4fr 0.9fr 0.9fr;
+  grid-template-columns: 2.4fr 1fr 1.3fr 1.4fr 1.4fr 1.2fr 0.9fr;
   align-items: center;
   padding: 7px 10px;
   border: none;
@@ -178,6 +178,27 @@
   font-size: 11px;
   color: var(--text-soft);
   pointer-events: none;
+}
+
+.netIoCell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.netIoRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.netIoIconDown {
+  color: #22c55e;
+}
+
+.netIoIconUp {
+  color: #3b82f6;
 }
 
 

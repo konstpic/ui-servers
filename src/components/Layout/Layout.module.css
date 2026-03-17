@@ -7,15 +7,13 @@
 }
 
 .sidebar {
-  background: linear-gradient(160deg, #020617, #020617, #020617, #020617)
-      padding-box,
-    linear-gradient(160deg, #22c55e, #6366f1, #ec4899) border-box;
-  border-radius: 24px;
-  border: 1px solid transparent;
-  box-shadow: var(--shadow-soft);
+  background: #020617;
+  border-radius: 20px;
+  border: 1px solid rgba(30, 64, 175, 0.55);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
   display: flex;
   flex-direction: column;
-  padding: 18px 18px 14px;
+  padding: 18px 16px 14px;
   gap: 18px;
 }
 
@@ -61,69 +59,52 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  background: radial-gradient(circle at top left, #0f172a, #020617);
+  gap: 2px;
+  padding: 6px 4px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
   color: var(--text-soft);
   font-size: 13px;
   cursor: pointer;
-  border: 1px solid transparent;
+  border-left: 2px solid transparent;
+  text-decoration: none;
   transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    border-color 0.16s ease,
-    transform 0.08s ease;
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .navItemIcon {
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 30% 20%, #4ade80, #22c55e 40%, #0f172a);
-  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.5);
-  font-size: 11px;
+  color: #6b7280;
 }
 
 .navItemLabel {
   flex: 1;
+  font-weight: 500;
 }
 
 .navItemMeta {
   font-size: 11px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
   color: var(--text-muted);
-  border: 1px solid rgba(148, 163, 184, 0.22);
 }
 
 .navItemActive {
-  background: radial-gradient(circle at top left, #22c55e, #6366f1);
-  color: #020617;
-  border-color: rgba(15, 23, 42, 0.9);
-  transform: translateY(-1px);
+  background: #020617;
+  color: #e5e7eb;
+  border-left-color: #3b82f6;
 }
 
 .navItemActive .navItemIcon {
-  background: #020617;
-  box-shadow: none;
-}
-
-.navItemActive .navItemMeta {
-  background: rgba(15, 23, 42, 0.8);
-  color: #e5e7eb;
+  color: #9ca3af;
 }
 
 .sidebarFooter {

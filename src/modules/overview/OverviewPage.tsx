@@ -11,7 +11,6 @@ import { fetchNodes } from '../../api/nodes'
 import { fetchNginxProxies } from '../../api/nginx'
 import { fetchEvents } from '../../api/events'
 import { fetchServerMetrics } from '../../api/metrics'
-import layoutStyles from '../../components/Layout/Layout.module.css'
 import styles from './OverviewPage.module.css'
 
 export function OverviewPage() {
@@ -58,8 +57,8 @@ export function OverviewPage() {
       : 0
 
   return (
-    <div className={styles.root}>
-      <section className={layoutStyles.grid}>
+    <div className="flex flex-col gap-4">
+      <section className="grid gap-3 md:grid-cols-3">
         <StatCard
           label="Servers"
           primary={serversCount.toString()}
@@ -94,12 +93,14 @@ export function OverviewPage() {
         />
       </section>
 
-      <section className={layoutStyles.gridTwo}>
-        <div>
-          <div className={layoutStyles.sectionHeader}>
+      <section className="grid gap-4 md:grid-cols-[minmax(0,2.1fr)_minmax(0,1.4fr)]">
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between">
             <div>
-              <div className={layoutStyles.sectionTitle}>Recent activity</div>
-              <div className={layoutStyles.sectionHelp}>
+              <div className="text-sm font-medium text-slate-100">
+                Recent activity
+              </div>
+              <div className="text-xs text-slate-500">
                 Last operations across nginx, servers and agents
               </div>
             </div>
@@ -126,11 +127,13 @@ export function OverviewPage() {
           </div>
         </div>
 
-        <div>
-          <div className={layoutStyles.sectionHeader}>
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between">
             <div>
-              <div className={layoutStyles.sectionTitle}>Backend agents</div>
-              <div className={layoutStyles.sectionHelp}>
+              <div className="text-sm font-medium text-slate-100">
+                Backend agents
+              </div>
+              <div className="text-xs text-slate-500">
                 Mock heartbeat of aggregated API
               </div>
             </div>
@@ -174,10 +177,10 @@ function StatCard({ label, primary, accent, hint }: StatCardProps) {
         <div className={styles.statBadge}>
           <span
             className={[
-              layoutStyles.badgeDot,
+              'h-1.5 w-1.5 rounded-full',
               accent === 'ok'
-                ? layoutStyles.badgeDotOk
-                : layoutStyles.badgeDotWarn,
+                ? 'bg-emerald-400 shadow-[0_0_0_3px_rgba(16,185,129,0.5)]'
+                : 'bg-amber-400 shadow-[0_0_0_3px_rgba(245,158,11,0.5)]',
             ]
               .filter(Boolean)
               .join(' ')}

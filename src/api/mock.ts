@@ -19,6 +19,10 @@ const servers: Server[] = [
     ram: 61,
     agentsCount: 3,
     nginxCount: 5,
+    agentName: 'node-exporter',
+    agentPingMs: 12,
+    netRxBytes: 125_000,
+    netTxBytes: 64_000,
   },
   {
     id: 'srv-2',
@@ -31,6 +35,10 @@ const servers: Server[] = [
     ram: 82,
     agentsCount: 2,
     nginxCount: 4,
+    agentName: 'node-exporter',
+    agentPingMs: 45,
+    netRxBytes: 2_300_000,
+    netTxBytes: 1_100_000,
   },
   {
     id: 'srv-3',
@@ -43,6 +51,10 @@ const servers: Server[] = [
     ram: 47,
     agentsCount: 1,
     nginxCount: 1,
+    agentName: 'node-exporter',
+    agentPingMs: 8,
+    netRxBytes: 40_000,
+    netTxBytes: 22_000,
   },
 ]
 

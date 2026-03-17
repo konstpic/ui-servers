@@ -15,7 +15,32 @@ services:
     container_name: serverui-backend
     environment:
       - PORT=4000
-      - AGENT_URLS=http://host.docker.internal:18081,http://host.docker.internal:18082
+      - NODE_EXPORTERS=server-1=http://5.39.220.25:9100;server-2=http://fin.konstpic.ru:9100
+      - NODE_EXPORTER_POLL_INTERVAL_SEC=1
     ports:
       - "4000:4000"
+
+  # node-exporter-1:
+  #   image: prom/node-exporter:latest
+  #   container_name: serverui-node-exporter-1
+  #   command:
+  #     - '--path.rootfs=/host'
+  #   pid: host
+  #   restart: unless-stopped
+  #   volumes:
+  #     - '/:/host:ro,rslave'
+  #   ports:
+  #     - "9101:9100"
+
+  # node-exporter-2:
+  #   image: prom/node-exporter:latest
+  #   container_name: serverui-node-exporter-2
+  #   command:
+  #     - '--path.rootfs=/host'
+  #   pid: host
+  #   restart: unless-stopped
+  #   volumes:
+  #     - '/:/host:ro,rslave'
+  #   ports:
+  #     - "9102:9100"
 

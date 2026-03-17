@@ -2,9 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { NginxFlowSample, NginxProxy } from '../../api/types'
 import { fetchNginxProxies, reloadNginx, toggleNginx } from '../../api/nginx'
 import { fetchNginxMetrics } from '../../api/metrics'
-import layoutStyles from '../../components/Layout/Layout.module.css'
 import { useToast } from '../../components/Toasts/ToastContext'
-import styles from './NginxPage.module.css'
 
 export function NginxPage() {
   const toast = useToast()
@@ -51,39 +49,46 @@ export function NginxPage() {
   })
 
   return (
-    <div className={styles.root}>
-      <div className={layoutStyles.sectionHeader}>
-        <div>
-          <div className={layoutStyles.sectionTitle}>Nginx proxies</div>
-          <div className={layoutStyles.sectionHelp}>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <div className="text-sm font-medium text-slate-100">Nginx proxies</div>
+          <div className="text-xs text-slate-500">
             Domains, upstreams and SSL validity
           </div>
         </div>
       </div>
-      <div className={styles.grid}>
+      <div className="grid gap-3 md:grid-cols-3">
         {(proxies ?? []).map((proxy) => (
-          <article key={proxy.id} className={styles.card}>
-            <header className={styles.cardHeader}>
-              <div className={styles.cardTitle}>
-                <span className={styles.domain}>{proxy.domain}</span>
-                <span className={styles.meta}>on {proxy.serverId}</span>
+          <article
+            key={proxy.id}
+            className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-950/60 p-3"
+          >
+            <header className="flex items-center justify-between gap-3">
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-slate-50">
+                  {proxy.domain}
+                </span>
+                <span className="text-xs text-slate-500">
+                  on {proxy.serverId}
+                </span>
               </div>
               <StatusBadge status={proxy.status} />
             </header>
-            <div className={styles.bodyRow}>
-              <span className={styles.label}>Upstream</span>
-              <span className={styles.value}>{proxy.upstream}</span>
+            <div className="flex items-baseline justify-between gap-2 text-xs">
+              <span className="text-slate-500">Upstream</span>
+              <span className="font-mono text-slate-200">{proxy.upstream}</span>
             </div>
-            <div className={styles.bodyRow}>
-              <span className={styles.label}>SSL</span>
-              <span className={styles.value}>
+            <div className="flex items-baseline justify-between gap-2 text-xs">
+              <span className="text-slate-500">SSL</span>
+              <span className="font-mono text-slate-200">
                 valid, {proxy.sslDaysLeft} days left
               </span>
             </div>
-            <footer className={styles.footer}>
+            <footer className="mt-1 flex items-center justify-between gap-2">
               <button
                 type="button"
-                className={styles.secondaryButton}
+                className="inline-flex items-center rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-[11px] text-slate-200 hover:bg-slate-900"
                 onClick={() => toggle.mutate(proxy.id)}
                 disabled={toggle.isPending}
               >
@@ -91,7 +96,7 @@ export function NginxPage() {
               </button>
               <button
                 type="button"
-                className={styles.primaryButton}
+                className="inline-flex items-center rounded-full bg-sky-500 px-3 py-1 text-[11px] font-semibold text-slate-950 hover:bg-sky-400"
                 onClick={() => reload.mutate(proxy.id)}
                 disabled={reload.isPending}
               >
@@ -102,15 +107,15 @@ export function NginxPage() {
         ))}
       </div>
 
-      <div className={layoutStyles.sectionHeader}>
-        <div>
-          <div className={layoutStyles.sectionTitle}>Live traffic</div>
-          <div className={layoutStyles.sectionHelp}>
+      <div className="mt-2 flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <div className="text-sm font-medium text-slate-100">Live traffic</div>
+          <div className="text-xs text-slate-500">
             Aggregated flow per SNI / upstream over last 5 minutes
           </div>
         </div>
       </div>
-      <div className={styles.flowGrid}>
+      <div className="grid gap-3 md:grid-cols-3">
         {Object.entries(byDomain).map(([key, samples]) => {
           const totalSessions = samples.reduce(
             (sum, s) => sum + (s.sessions ?? 0),
@@ -123,30 +128,42 @@ export function NginxPage() {
             ) / 1024
 
           return (
-            <article key={key} className={styles.flowCard}>
-              <header className={styles.cardHeader}>
-                <div className={styles.cardTitle}>
-                  <span className={styles.domain}>{key}</span>
-                  <span className={styles.meta}>
+            <article
+              key={key}
+              className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-950/60 p-3"
+            >
+              <header className="flex items-center justify-between gap-3">
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-slate-50">
+                    {key}
+                  </span>
+                  <span className="text-xs text-slate-500">
                     {samples[0]?.proxyId ?? 'unknown proxy'}
                   </span>
                 </div>
               </header>
-              <div className={styles.bodyRow}>
-                <span className={styles.label}>Sessions</span>
-                <span className={styles.value}>{totalSessions}</span>
+              <div className="flex items-baseline justify-between gap-2 text-xs">
+                <span className="text-slate-500">Sessions</span>
+                <span className="font-mono text-slate-200">
+                  {totalSessions}
+                </span>
               </div>
-              <div className={styles.bodyRow}>
-                <span className={styles.label}>Traffic (approx)</span>
-                <span className={styles.value}>{totalBytes.toFixed(1)} KiB</span>
+              <div className="flex items-baseline justify-between gap-2 text-xs">
+                <span className="text-slate-500">Traffic (approx)</span>
+                <span className="font-mono text-slate-200">
+                  {totalBytes.toFixed(1)} KiB
+                </span>
               </div>
-              <div className={styles.flowUpstreams}>
+              <div className="mt-1 space-y-1">
                 {samples.map((s) => (
-                  <div key={s.id} className={styles.flowUpstreamRow}>
-                    <span className={styles.flowUpstreamAddr}>
+                  <div
+                    key={s.id}
+                    className="flex flex-col rounded-xl border border-slate-800 bg-slate-950 px-2 py-1 text-[11px]"
+                  >
+                    <span className="font-mono text-slate-200">
                       {s.upstreamAddr}
                     </span>
-                    <span className={styles.flowUpstreamMeta}>
+                    <span className="text-slate-500">
                       {s.sessions} sessions,{' '}
                       {(s.bytesSent + s.bytesReceived) / 1024} KiB
                     </span>
@@ -165,20 +182,20 @@ type Status = NginxProxy['status']
 
 function StatusBadge({ status }: { status: Status }) {
   return (
-    <span className={styles.statusBadge}>
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-950 px-2 py-0.5 text-[11px] capitalize">
       <span
         className={[
-          styles.statusDot,
+          'h-1.5 w-1.5 rounded-full',
           status === 'healthy'
-            ? styles.statusDotOk
+            ? 'bg-emerald-400 shadow-[0_0_0_3px_rgba(16,185,129,0.4)]'
             : status === 'degraded'
-              ? styles.statusDotWarn
-              : styles.statusDotError,
+              ? 'bg-amber-400 shadow-[0_0_0_3px_rgba(245,158,11,0.4)]'
+              : 'bg-rose-400 shadow-[0_0_0_3px_rgba(244,63,94,0.4)]',
         ]
           .filter(Boolean)
           .join(' ')}
       />
-      <span className={styles.statusLabel}>{status}</span>
+      <span>{status}</span>
     </span>
   )
 }

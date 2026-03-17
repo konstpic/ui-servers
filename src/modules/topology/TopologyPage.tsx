@@ -15,8 +15,6 @@ import 'reactflow/dist/style.css'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchTopology, type TopologyResponse } from '../../api/topology'
-import layoutStyles from '../../components/Layout/Layout.module.css'
-import styles from './TopologyPage.module.css'
 
 export function TopologyPage() {
   const { data } = useQuery<TopologyResponse>({
@@ -67,17 +65,17 @@ export function TopologyPage() {
   }
 
   return (
-    <div className={styles.root}>
-      <div className={layoutStyles.sectionHeader}>
-        <div>
-          <div className={layoutStyles.sectionTitle}>Traffic flow</div>
-          <div className={layoutStyles.sectionHelp}>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <div className="text-sm font-medium text-slate-100">Traffic flow</div>
+          <div className="text-xs text-slate-500">
             nginx → servers → agents, rendered as an interactive graph
           </div>
         </div>
       </div>
 
-      <div className={styles.canvas}>
+      <div className="h-[520px] overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60">
         <ReactFlow
           nodes={nodes}
           edges={edges}

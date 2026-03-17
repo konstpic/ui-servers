@@ -13,6 +13,10 @@ export interface Server {
   ram: number
   agentsCount: number
   nginxCount: number
+  agentName: string | null
+  agentPingMs: number | null
+  netRxBytes: number | null
+  netTxBytes: number | null
 }
 
 export interface Node {

@@ -2,12 +2,14 @@ import { Routes, Route } from 'react-router-dom'
 import { Layout } from './components/Layout/Layout'
 import { OverviewPage } from './modules/overview/OverviewPage'
 import { ServersPage } from './modules/servers/ServersPage'
-import { NodesPage } from './modules/nodes/NodesPage'
 import { NginxPage } from './modules/nginx/NginxPage'
 import { TopologyPage } from './modules/topology/TopologyPage'
 import { SettingsPage } from './modules/settings/SettingsPage'
+import { useLiveDataSocket } from './hooks/useLiveDataSocket'
 
 function App() {
+  useLiveDataSocket()
+
   return (
     <Routes>
       <Route
@@ -29,17 +31,6 @@ function App() {
             subtitle="Hosts, load and attached agents / proxies"
           >
             <ServersPage />
-          </Layout>
-        }
-      />
-      <Route
-        path="/nodes"
-        element={
-          <Layout
-            title="Nodes / agents"
-            subtitle="Agents installed on servers and their connectivity"
-          >
-            <NodesPage />
           </Layout>
         }
       />
